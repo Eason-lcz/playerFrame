@@ -2,27 +2,64 @@
   <div class="toolBox">
     <div class="tool-box">
       <el-button class="add_btn" circle></el-button>
-      <el-button class="layout_btn" circle></el-button>
-      <el-button class="setting_btn" @click="showSettingMenu" circle></el-button>
-      <el-button class="account_btn" circle></el-button>
+      <el-button class="qrCode_btn" circle></el-button>
+      <PopupMenu placement="bottom-end" class="setting_menu">
+        <template #trigger>
+          <el-button class="setting_btn" circle></el-button>
+        </template>
+
+        <template #menu>
+          <ul class="menu-list">
+            <li >筛选</li>
+            <li >内容封面</li>
+            <li >水印</li>
+            <li >语音控制</li>
+            <li >开机自启</li>
+          </ul>
+        </template>
+      </PopupMenu>
+      <PopupMenu placement="bottom-end"  class="account_menu" >
+        <template #trigger>
+          <el-button class="account_btn" @click="handleClickOutside" circle></el-button>
+        </template>
+
+        <template #menu>
+          <ul class="menu-list">
+            <li >设备编码</li>
+            <li >用户</li>
+          </ul>
+        </template>
+      </PopupMenu>
     </div>
     <div class="windows_btn">
-      <el-button class="minimize_btn" circle></el-button>
-      <el-button class="close_btn" circle></el-button>
+      <el-button class="minimize_btn" @click="handleMinimize" circle></el-button>
+      <el-button class="close_btn" @click="handleClose" circle></el-button>
     </div>
   </div>
 </template>
 
 <script setup>
-// import {ref} from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue';
+import PopupMenu from "../popupMenu/index.vue";
 
-const showSettingMenu = () => {
-  console.log('设置按钮被点击了')
-  showSettingMenu.value = true
-  // 显示设置菜单
-  document.querySelector('.setting_menu').style.display = 'block'
-}
+const handleMinimize = () => {
+  window.electronAPI.minimizeWindow();
+};
 
+const handleClose = () => {
+  window.electronAPI.closeWindow();
+};
+onMounted(() => {
+  if (window.electronAPI) {
+    window.electronAPI.onWindowStateChange();
+  }
+});
+
+onUnmounted(() => {
+  if (window.electronAPI) {
+    window.electronAPI.removeWindowStateListener();
+  }
+});
 defineProps({
   name: "toolBox",
 })
@@ -60,8 +97,8 @@ defineProps({
   background: url('../../../assets/img/add.png');
   background-size: cover;
 }
-.layout_btn{
-  background: url('../../../assets/img/layout.png');
+.qrCode_btn{
+  background: url('../../../assets/img/qrCode.png');
   background-size: cover;
 }
 .setting_btn{
@@ -79,5 +116,12 @@ defineProps({
 .close_btn{
   background: url('../../../assets/img/close.png');
   background-size: cover;
+}
+ul{
+  padding: 0;
+}
+li{
+  list-style-type: none;
+  line-height: 40px;
 }
 </style>

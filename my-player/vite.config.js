@@ -21,6 +21,6 @@ export default defineConfig({
   // },
   plugins: [vue(),
     electron({
-      entry: 'electron.main.js',
+      entry: 'electron.main.cjs',
     })],
 })

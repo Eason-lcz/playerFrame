@@ -1,7 +1,7 @@
 <template>
   <div class="popup-menu-container">
     <!-- 触发元素插槽 -->
-    <div ref="triggerRef" @click.stop="toggleMenu">
+    <div ref="triggerRef" @click.stop="handleTriggerClick">
       <slot name="trigger"></slot>
     </div>
 
@@ -20,8 +20,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import {ref, onMounted, onUnmounted, computed ,reactive} from 'vue';
+import eventBus from '../../../utils/eventBus';
 
+defineOptions({
+  name: "PopupMenu",
+})
 const props = defineProps({
   // 菜单位置：bottom-start, bottom-end, top-start, top-end
   placement: {
@@ -32,6 +36,10 @@ const props = defineProps({
   autoClose: {
     type: Boolean,
     default: true
+  },
+  menuId: {
+    type: String,
+    default: () => `menu_${Date.now()}_${Math.random()}`
   }
 });
 
@@ -73,11 +81,6 @@ const menuStyle = computed(() => {
   return styles;
 });
 
-const toggleMenu = () => {
-  visible.value = !visible.value;
-  emit('visible-change', visible.value);
-};
-
 const closeMenu = () => {
   if (visible.value) {
     visible.value = false;
@@ -85,6 +88,24 @@ const closeMenu = () => {
   }
 };
 
+const openMenu = () => {
+  // 先通知其他菜单关闭
+  eventBus.emit('closeAllMenus', props.menuId);
+  visible.value = true;
+  emit('visible-change', true);
+};
+
+const toggleMenu = () => {
+  if (visible.value) {
+    closeMenu();
+  } else {
+    openMenu();
+  }
+};
+const handleTriggerClick = (event) => {
+  event.stopPropagation();
+  toggleMenu();
+};
 const handleClickOutside = (event) => {
   if (!visible.value) return;
 
@@ -101,29 +122,29 @@ const handleEscapeKey = (event) => {
     closeMenu();
   }
 };
-
+// 监听全局关闭事件
+const handleGlobalClose = (exceptMenuId) => {
+  if (exceptMenuId !== props.menuId && visible.value) {
+    closeMenu();
+  }
+};
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   document.addEventListener('keydown', handleEscapeKey);
+  eventBus.on('closeAllMenus', handleGlobalClose);
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
   document.removeEventListener('keydown', handleEscapeKey);
+  eventBus.off('closeAllMenus', handleGlobalClose);
 });
 
-// 如果 autoClose 为 true，监听菜单项点击
-const handleMenuItemClick = (event) => {
-  if (props.autoClose) {
-    closeMenu();
-  }
-};
-
-// 提供关闭方法给父组件
 defineExpose({
   close: closeMenu,
-  open: () => { visible.value = true; },
-  toggle: toggleMenu
+  open: openMenu,
+  toggle: toggleMenu,
+  visible
 });
 </script>
 
@@ -152,6 +173,7 @@ defineExpose({
   background: white;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 160px;
+  min-width: 100px;
 }
+
 </style>
