@@ -2,7 +2,20 @@
   <div class="toolBox">
     <div class="tool-box">
       <el-button class="add_btn" circle></el-button>
-      <el-button class="qrCode_btn" circle></el-button>
+<!--      <el-button class="qrCode_btn" circle>-->
+      <el-popover
+          content="QrCode"
+          placement="bottom"
+          trigger="click"
+      >
+        <template #reference> <el-button class="qrCode_btn" circle></el-button></template>
+        <template #default  style="width: 100%; text-align: center;">
+          <div class="qrCode_img" style="width: 100%; text-align: center;">
+            <img src="@/assets/img/officialQrcode.png" alt="QrCode" style="width: 100px; height: 100px;">
+          </div>
+        </template>
+      </el-popover>
+<!--      </el-button>-->
       <PopupMenu placement="bottom-end" class="setting_menu">
         <template #trigger>
           <el-button class="setting_btn" circle></el-button>
@@ -18,7 +31,7 @@
           </ul>
         </template>
       </PopupMenu>
-      <PopupMenu placement="bottom-end"  class="account_menu" >
+      <PopupMenu placement="bottom-end" class="account_menu" >
         <template #trigger>
           <el-button class="account_btn" @click="handleClickOutside" circle></el-button>
         </template>
@@ -61,11 +74,14 @@ onUnmounted(() => {
   }
 });
 defineProps({
-  name: "toolBox",
+  name: "MainContentArea",
 })
 </script>
 
 <style scoped>
+.el-button{
+  margin: 0 !important;
+}
 .toolBox{
   display: flex;
   flex-direction: row;
@@ -89,6 +105,7 @@ defineProps({
   transition: all 0.3s ease-in-out;
 }
 .windows_btn{
+  width:100px;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
